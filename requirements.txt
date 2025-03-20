@@ -56,5 +56,3 @@ uvicorn==0.34.0
 wheel==0.45.1
 yarl==1.18.3
 zope.interface==7.2
-SQLAlchemy>=2.0.0
-asyncpg>=0.30.0
