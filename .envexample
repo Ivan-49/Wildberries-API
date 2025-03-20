@@ -1,0 +1,6 @@
+POSTGRES_USER=username
+POSTGRES_PASSWORD=password
+POSTGRES_DB=DB_name
+
+BOT_TOKEN=your_bot_token
+
