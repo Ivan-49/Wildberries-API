@@ -1,6 +1,11 @@
-POSTGRES_USER=username
-POSTGRES_PASSWORD=password
-POSTGRES_DB=DB_name
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=mypassword
+POSTGRES_DB=mydb
 
-BOT_TOKEN=your_bot_token
+DATABASE_URL=postgresql+asyncpg://myuser:mypassword@database:5432/mydb
 
+JWT_SECRET_KEY = "secret" your_jwt_secret_key
+ALGORITHM = "HS256" algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+BOT_TOKEN="your_bot_token"
