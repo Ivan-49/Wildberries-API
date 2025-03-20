@@ -1,10 +1,10 @@
-FROM python:3.9-slim-buster
+FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY src/API/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/API .
+COPY . .  
 
-CMD ["python", "main.py"]  # Или другой файл запуска
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

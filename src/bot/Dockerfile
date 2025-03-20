@@ -1,10 +1,10 @@
-FROM python:3.9-slim-buster
+FROM python:3.10-slim
 
 WORKDIR /app
 
-COPY src/bot/requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/bot .
 
-CMD ["python", "main.py"]  # Или другой файл запуска
+CMD ["python", "main.py"]

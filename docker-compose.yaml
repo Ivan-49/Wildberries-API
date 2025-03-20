@@ -3,15 +3,15 @@ version: "3.8"
 services:
   api:
     build:
-      context: ./src/API
-      dockerfile: Dockerfile
-    command: python main.py
+      context: .
+      dockerfile: src/API/Dockerfile
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
     ports:
-      - "8001:8000"
+      - "8000:8000"
     volumes:
       - ./src/API:/app
     depends_on:
-      db:
+      database:
         condition: service_healthy
     env_file:
       - .env
@@ -20,14 +20,14 @@ services:
 
   bot:
     build:
-      context: ./src/bot
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/bot/Dockerfile
     command: python main.py
     volumes:
       - ./src/bot:/app
     depends_on:
       - api
-      - db
+      - database
     env_file:
       - .env
     environment:
@@ -46,9 +46,9 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    command: ["postgres", "-c", "shared_preload_libraries=pg_trgm"]
+    command: [ "postgres", "-c", "shared_preload_libraries=pg_trgm" ]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 1s
       timeout: 120s
       retries: 5
@@ -58,7 +58,7 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./src/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - api
       - bot
