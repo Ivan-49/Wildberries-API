@@ -3,12 +3,17 @@ import logging
 
 from routers.auth.router import router as auth_router
 from database.main import init_models
+from redis import RedisClient
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-app = FastAPI()
 
+redis = RedisClient()
+
+app = FastAPI()
 app.include_router(auth_router, prefix="/api/v1/auth")
+
 
 
 @app.on_event("startup")

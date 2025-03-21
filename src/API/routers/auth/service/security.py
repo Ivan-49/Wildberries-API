@@ -3,7 +3,7 @@ from jose import JWTError, jwt
 from argon2 import PasswordHasher
 from dotenv import load_dotenv
 import os
-
+from main import redis
 from routers.auth.service.repository import UserRepository
 
 load_dotenv()
@@ -40,11 +40,15 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": int(expire.timestamp())})
     
-    return jwt.encode(
+    jwt_token = jwt.encode(
         to_encode,
         JWT_SECRET_KEY,
         algorithm=ALGORITHM
-    )
+    ) 
+
+    
+
+    return jwt_token 
 
 def verify_token(token: str, credentials_exception) -> int:
     try:
