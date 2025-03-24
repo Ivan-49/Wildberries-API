@@ -13,7 +13,6 @@ app = FastAPI()
 app.include_router(auth_router, prefix="/api/v1/auth")
 
 
-
 @app.on_event("startup")
 async def startup_event():
     await init_models()

@@ -1,4 +1,3 @@
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from logging import getLogger
@@ -13,11 +12,9 @@ logger = getLogger(__name__)
 
 
 class UserRepository:
-    async def create_user(
-        self, user: UserShema, session: AsyncSession
-    ) -> UserModel:
+    async def create_user(self, user: UserShema, session: AsyncSession) -> UserModel:
         from routers.auth.service.security import get_password_hash
-        
+
         logger.error("Начали создавать пользователя")
         try:
             if not user:
@@ -43,7 +40,8 @@ class UserRepository:
             return None
 
     async def get_user_by_user_id(
-        self, user_id: int, session: AsyncSession ) -> Optional[UserModel]:
+        self, user_id: int, session: AsyncSession
+    ) -> Optional[UserModel]:
         try:
             result = await session.execute(
                 select(UserModel).where(UserModel.user_id == user_id)
@@ -54,7 +52,8 @@ class UserRepository:
             return None
 
     async def get_user_by_username(
-        self, username: str, session: AsyncSession ) -> Optional[UserModel]:
+        self, username: str, session: AsyncSession
+    ) -> Optional[UserModel]:
         try:
 
             result = await session.execute(

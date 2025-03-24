@@ -9,8 +9,6 @@ REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
 
 
-
-
 class RedisClient:
     def __init__(self, url=f"redis://{REDIS_HOST}:{REDIS_PORT}", decode_responses=True):
         self.redis = aioredis.from_url(url, decode_responses=decode_responses)
@@ -35,4 +33,3 @@ class RedisClient:
     async def close_connection(self):
         await self.redis.close()
         await self.redis.wait_closed()
-
