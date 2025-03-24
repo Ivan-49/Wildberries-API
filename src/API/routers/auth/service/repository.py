@@ -7,8 +7,8 @@ from typing import Optional
 from models.user import UserModel
 from routers.auth.schemas.user import UserShema
 from database.main import get_session
-
 logger = getLogger(__name__)
+
 
 
 class UserRepository:
@@ -60,6 +60,22 @@ class UserRepository:
                 select(UserModel).where(UserModel.username == username)
             )
             return result.scalars().first()
+        except Exception as e:
+            logger.error(f"Error get user: {e}")
+            return None
+    
+    async def change_user_password(self, user: UserModel, old_password: str, new_password: str, session: AsyncSession) -> Optional[UserModel]:
+        from routers.auth.service.security import verify_password
+        from routers.auth.service.security import get_password_hash
+        
+        try:
+            if not await verify_password(old_password, user.hashed_password):
+                return None
+            
+            user.hashed_password = await get_password_hash(new_password)
+            session.add(user)
+            await session.commit()
+            return user
         except Exception as e:
             logger.error(f"Error get user: {e}")
             return None

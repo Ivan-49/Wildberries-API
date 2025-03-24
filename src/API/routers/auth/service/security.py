@@ -75,4 +75,5 @@ async def verify_token(token: str, credentials_exception) -> int:
         raise credentials_exception
 
 
-user_repository = UserRepository()
+
+
