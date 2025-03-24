@@ -21,6 +21,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 logger = getLogger(__name__)
 
+
 @router.post("/register")
 async def register_user(user: UserShema, session: AsyncSession = Depends(get_session)):
     user_in_db = await user_repository.get_user_by_username(user.username, session)
@@ -50,6 +51,7 @@ async def login_by_username(
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token = await create_access_token(data={"sub": user.user_id})
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/token/user-id", response_model=TokenSchema)

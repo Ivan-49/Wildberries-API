@@ -19,12 +19,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 argon2 = PasswordHasher(memory_cost=2**16, parallelism=4, hash_len=32, salt_len=16)
 
+
 async def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         argon2.verify(hashed_password, plain_password)
         return True
     except:
         return False
+
 
 async def get_password_hash(password: str) -> str:
     return argon2.hash(password)
@@ -33,7 +35,6 @@ async def get_password_hash(password: str) -> str:
 async def create_access_token(
     data: dict, expires_delta: timedelta | None = None
 ) -> str:
-
     if not data or not JWT_SECRET_KEY:
         raise ValueError("Некорректные данные для создания токена")
 
@@ -72,4 +73,7 @@ async def verify_token(token: str, credentials_exception) -> int:
         return user_id
     except JWTError:
         raise credentials_exception
+
+
+
 
