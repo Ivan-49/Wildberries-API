@@ -70,22 +70,16 @@ async def login_by_user_id(
 
 
 
-# @router.post("/change-password-by-username")
-# async def change_password(
-#     data: ChangePasswordbyUsernameSchema, session: AsyncSession = Depends(get_session)
-# ):
-#     user = await user_repository.get_user_by_username(data.user_name, session)
-#     if not user:
-#         raise HTTPException(status_code=400, detail="User not found")
-#     await user_repository.change_user_password(
-#         user, data.old_password, data.new_password, session
-#     )
-#     return {"message": "Password changed successfully"}
+@router.post("/change-password-by-username")
+async def change_password():
+    return {"message": "эта функция не реализована"}
 
-# @router.post("/logout")
-# async def logout_user(username: str): ...
+@router.post("/logout")
+async def logout_user(): 
+    return {"message": "эта функция не реализована"}
 
 
-# @router.get("/me")
-# async def get_user(user_id: int = Depends(get_current_user)): ...
+@router.get("/get-user-data")
+async def get_user():
+    return {"message": "эта функция не реализована"}
 
