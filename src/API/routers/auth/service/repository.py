@@ -25,7 +25,7 @@ class UserRepository:
                 return None
             user = user.model_dump()
             if "password" in user:
-                user["hashed_password"] = get_password_hash(user["password"])
+                user["hashed_password"] = await get_password_hash(user["password"])
                 del user["password"]
             user = UserModel(**user)
 

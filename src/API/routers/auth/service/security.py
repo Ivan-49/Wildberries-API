@@ -3,8 +3,12 @@ from jose import JWTError, jwt
 from argon2 import PasswordHasher
 from dotenv import load_dotenv
 import os
-from main import redis
+from redis_client import RedisClient
 from routers.auth.service.repository import UserRepository
+import logging
+redis = RedisClient()
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -19,17 +23,17 @@ argon2 = PasswordHasher(
     salt_len=16
 )
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
+async def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         argon2.verify(hashed_password, plain_password)
         return True
     except:
         return False
 
-def get_password_hash(password: str) -> str:
+async def get_password_hash(password: str) -> str:
     return argon2.hash(password)
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
+async def create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     if not data or not JWT_SECRET_KEY:
         raise ValueError("Некорректные данные для создания токена")
 
@@ -44,18 +48,22 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None) -> s
         to_encode,
         JWT_SECRET_KEY,
         algorithm=ALGORITHM
-    ) 
-
-    
+    )
+        
+    await redis.save_token(data["sub"], jwt_token, ACCESS_TOKEN_EXPIRE_MINUTES if expires_delta is None else expires_delta.total_seconds())
 
     return jwt_token 
 
-def verify_token(token: str, credentials_exception) -> int:
+async def verify_token(token: str, credentials_exception) -> int:
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         user_id: int = payload.get("sub")
         if user_id is None:
             raise credentials_exception
+        
+        if await redis.check_blacklist(user_id):
+            raise credentials_exception
+        
         return user_id
     except JWTError:
         raise credentials_exception
