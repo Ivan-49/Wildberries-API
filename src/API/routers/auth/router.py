@@ -21,30 +21,20 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 logger = getLogger(__name__)
 
-
-async def get_current_user(
-    token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)
-):
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    user_id = verify_token(token, credentials_exception)
-    user = await user_repository.get_user_by_user_id(user_id, session)
-    if not user:
-        raise credentials_exception
-    return user
-
-
 @router.post("/register")
 async def register_user(user: UserShema, session: AsyncSession = Depends(get_session)):
     user_in_db = await user_repository.get_user_by_username(user.username, session)
     if user_in_db:
         raise HTTPException(status_code=400, detail="User already exists")
 
-    await user_repository.create_user(user, session=session)
-    return {"message": "User created successfully"}
+    user_in_db = await user_repository.create_user(user, session=session)
+    return {
+        "message": "User created successfully",
+        "user_id": user_in_db.user_id,
+        "username": user_in_db.username,
+        "first_name": user_in_db.first_name,
+        "last_name": user_in_db.last_name,
+    }
 
 
 @router.post("/token/username", response_model=TokenSchema)
@@ -59,8 +49,7 @@ async def login_by_username(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = create_access_token(data={"sub": user.user_id})
-    return {"access_token": access_token, "token_type": "bearer"}
+    access_token = await create_access_token(data={"sub": user.user_id})
 
 
 @router.post("/token/user-id", response_model=TokenSchema)
