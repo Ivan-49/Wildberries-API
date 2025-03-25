@@ -17,24 +17,7 @@ services:
       - .env
     environment:
       - REDIS_URL=http://redis:6379
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}  # Исправлено на database
-
-  bot:
-    build:
-      context: .
-      dockerfile: src/bot/Dockerfile
-    command: python main.py
-    volumes:
-      - ./src/bot:/app
-    depends_on:
-      - api
-      - database
-    env_file:
-      - .env
-    environment:
-      - REDIS_URL=http://redis:6379
-      - API_URL=http://api:8000
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}  # Исправлено на database
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB} # Исправлено на database
 
   database:
     image: postgres:15
@@ -60,12 +43,12 @@ services:
     image: redis:latest
     container_name: redis-service
     restart: always
-    ports: 
+    ports:
       - "6379:6379"
     volumes:
       - ./data:/data
       - ./redis.conf:/usr/local/etc/redis/redis.conf
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
 
   nginx:
     image: nginx:latest
