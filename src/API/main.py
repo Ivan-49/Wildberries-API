@@ -10,7 +10,7 @@ logger.setLevel(logging.DEBUG)
 
 
 app = FastAPI()
-app.include_router(auth_router, prefix="/api/v1/auth")
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 
 
 @app.on_event("startup")
