@@ -24,6 +24,9 @@ class RedisClient:
     async def get_token(self, user_id):
         return await self.redis.get(f"token-{user_id}")
 
+    async def check_token(self, user_id):
+        return await self.redis.exists(f"token-{user_id}")
+
     async def add_to_blacklist(self, user_id, ttl: int = 3600):
         await self.redis.set(f"blacklist-{user_id}", "revoked", ex=ttl)
 
