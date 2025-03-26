@@ -10,3 +10,9 @@ class UserShema(BaseModel):
     language: Optional[str] = Field(alias="language")
     is_bot: Optional[bool] = Field(alias="is_bot")
     premium_status: Optional[str] = Field(alias="premium_status")
+
+    @field_validator("password")
+    def validate_password(cls, value: str) -> str:
+        if len(value) < 8:
+            raise ValueError("Password must be at least 8 characters long")
+        return value

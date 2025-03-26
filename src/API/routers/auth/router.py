@@ -8,16 +8,26 @@ from routers.auth.service.security import (
     create_access_token,
     verify_token,
     verify_password,
+    delete_token,
+    get_password_hash,
 )
 from routers.auth.service.repository import UserRepository
 
-from routers.auth.schemas.token import TokenSchema
-from routers.auth.schemas.user import UserShema
+from schemas.token import TokenSchema
+from schemas.user import (
+    UserShema,
+)
 
 router = APIRouter()
 user_repository = UserRepository()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/auth-by-username",
+    scopes={
+        "logout": "Log out of the application",
+    },
+)
+
 
 logger = getLogger(__name__)
 
@@ -25,6 +35,7 @@ logger = getLogger(__name__)
 @router.post("/register")
 async def register_user(user: UserShema, session: AsyncSession = Depends(get_session)):
     user_in_db = await user_repository.get_user_by_username(user.username, session)
+
     if user_in_db:
         raise HTTPException(status_code=400, detail="User already exists")
 
@@ -38,7 +49,7 @@ async def register_user(user: UserShema, session: AsyncSession = Depends(get_ses
     }
 
 
-@router.post("/token/username", response_model=TokenSchema)
+@router.post("/auth-by-username", response_model=TokenSchema)
 async def login_by_username(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session),
@@ -54,10 +65,11 @@ async def login_by_username(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@router.post("/token/user-id", response_model=TokenSchema)
+@router.post("/auth-by-user-id", response_model=TokenSchema)
 async def login_by_user_id(
     user_id: int, password: str, session: AsyncSession = Depends(get_session)
 ):
+    
     user = await user_repository.get_user_by_user_id(user_id, session)
     if not user or not await verify_password(password, user.hashed_password):
         raise HTTPException(
@@ -65,21 +77,54 @@ async def login_by_user_id(
             detail="Incorrect user_id or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token = await create_access_token(data={"sub": user.user_id})
+    access_token = await create_access_token(data={"sub": int(user.user_id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.post("/change-password")
+async def change_password(
+    old_password: str,
+    new_password: str,
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_session)
+):
+    try:
+        user_id = await verify_token(token, HTTPException(status_code=401, detail="Invalid token"))
+        user = await user_repository.get_user_by_user_id(user_id, session)
+        
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Проверяем блокировку через репозиторий
+        if await user_repository.is_user_blocked(user.user_id):
+            raise HTTPException(status_code=401, detail="Account is blocked")
 
+        updated_user = await user_repository.change_user_password(
+            user, old_password, new_password, session
+        )
 
-@router.post("/change-password-by-username")
-async def change_password():
-    return {"message": "эта функция не реализована"}
+        if not updated_user:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to change password. Old password might be incorrect."
+            )
+
+        return {"message": "Password changed successfully"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        logger.error(f"Error changing password: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.post("/logout")
-async def logout_user(): 
-    return {"message": "эта функция не реализована"}
-
-
-@router.get("/get-user-data")
-async def get_user():
-    return {"message": "эта функция не реализована"}
-
+async def logout_user(
+    token: str = Depends(oauth2_scheme),
+    session: AsyncSession = Depends(get_session)
+):
+    user_id = await verify_token(token, HTTPException(status_code=401, detail="Invalid token"))
+    user = await user_repository.get_user_by_user_id(user_id, session)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await delete_token(user_id)
+    return {"message": f"User {user.username} logged out successfully"}

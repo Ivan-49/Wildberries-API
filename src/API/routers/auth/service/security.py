@@ -4,7 +4,6 @@ from argon2 import PasswordHasher
 from dotenv import load_dotenv
 import os
 from redis_client import RedisClient
-from routers.auth.service.repository import UserRepository
 import logging
 
 redis = RedisClient()
@@ -35,6 +34,11 @@ async def get_password_hash(password: str) -> str:
 async def create_access_token(
     data: dict, expires_delta: timedelta | None = None
 ) -> str:
+    if await redis.check_blacklist(data["sub"]):
+        redis.delete_token_from_blacklist(data["sub"])
+    if await redis.check_token(data["sub"]):
+        return await redis.get_token(data["sub"])
+
     if not data or not JWT_SECRET_KEY:
         raise ValueError("Некорректные данные для создания токена")
 
@@ -43,7 +47,8 @@ async def create_access_token(
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": int(expire.timestamp())})
+
+    to_encode.update({"exp": int(expire.timestamp()), "sub": str(data["sub"])})
 
     jwt_token = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
 
@@ -59,21 +64,30 @@ async def create_access_token(
 
     return jwt_token
 
-
 async def verify_token(token: str, credentials_exception) -> int:
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("sub")
-        if user_id is None:
+        user_id: str = payload.get("sub")
+        user_id = int(user_id)
+
+        # Проверяем Redis
+        if not await redis.check_token(user_id):
+            logger.error("Token not found in Redis")
             raise credentials_exception
 
+        # Проверяем черный список
         if await redis.check_blacklist(user_id):
             raise credentials_exception
 
         return user_id
-    except JWTError:
+    except JWTError as e:
         raise credentials_exception
 
+async def check_token_in_blacklist(user_id: int) -> bool:
+    return await redis.check_blacklist(user_id)
 
-
+async def delete_token(user_id: int) -> None:
+    await redis.delete_token_from_blacklist(user_id)
+    await redis.delete_token(user_id)
+    return None
 

@@ -5,10 +5,16 @@ from sqlalchemy.exc import IntegrityError
 from typing import Optional
 
 from models.user import UserModel
-from routers.auth.schemas.user import UserShema
-from database.main import get_session
-logger = getLogger(__name__)
+from schemas.user import UserShema
+from routers.auth.service.security import (
+    delete_token,
+    verify_password,
+    get_password_hash,
+    check_token_in_blacklist
+)
 
+
+logger = getLogger(__name__)
 
 
 class UserRepository:
@@ -21,9 +27,9 @@ class UserRepository:
                 logger.error("User is None")
                 return None
             user = user.model_dump()
-            if "password" in user:
-                user["hashed_password"] = await get_password_hash(user["password"])
-                del user["password"]
+
+            user["hashed_password"] = await get_password_hash(user["password"])
+            del user["password"]
             user = UserModel(**user)
 
             session.add(user)
@@ -63,15 +69,19 @@ class UserRepository:
         except Exception as e:
             logger.error(f"Error get user: {e}")
             return None
-    
-    async def change_user_password(self, user: UserModel, old_password: str, new_password: str, session: AsyncSession) -> Optional[UserModel]:
-        from routers.auth.service.security import verify_password
-        from routers.auth.service.security import get_password_hash
-        
+
+    async def change_user_password(
+        self,
+        user: UserModel,
+        old_password: str,
+        new_password: str,
+        session: AsyncSession,
+    ) -> Optional[UserModel]:
+
         try:
             if not await verify_password(old_password, user.hashed_password):
                 return None
-            
+
             user.hashed_password = await get_password_hash(new_password)
             session.add(user)
             await session.commit()
@@ -79,3 +89,19 @@ class UserRepository:
         except Exception as e:
             logger.error(f"Error get user: {e}")
             return None
+
+    async def logout_user(
+        self, username: str, session: AsyncSession
+    ) -> Optional[UserModel]:
+        user = await self.get_user_by_username(username, session)
+        if not user:
+            return None
+
+        try:
+            await delete_token(user.user_id)
+            return user
+        except Exception as e:
+            logger.error(f"Error logout: {e}")
+            return None
+    async def is_user_blocked(self, user_id: int) -> bool:
+            return await check_token_in_blacklist(user_id)
