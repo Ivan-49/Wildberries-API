@@ -115,6 +115,20 @@ async def change_password(
         logger.error(f"Error changing password: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
+@router.post("/user-info")
+async def get_user_info(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)):
+    user_id = await verify_token(token, HTTPException(status_code=401, detail="Invalid token"))
+    user = await user_repository.get_user_by_user_id(user_id, session)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {
+        "user_id": user.user_id,
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "language": user.language,
+        "is_bot": user.is_bot,
+        "premium_status": user.premium_status,}
 
 @router.post("/logout")
 async def logout_user(
