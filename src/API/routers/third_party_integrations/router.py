@@ -1,0 +1,8 @@
+from fastapi import APIRouter
+
+from routers.third_party_integrations.service.wb.wb_router import router as wb_router
+
+third_party_router = APIRouter()
+third_party_router.include_router(
+    wb_router, prefix="/wildberries", tags=["wildberries"]
+)
