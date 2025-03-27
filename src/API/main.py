@@ -2,15 +2,16 @@ from fastapi import FastAPI
 import logging
 from logging.handlers import RotatingFileHandler
 
+import asyncio
+
 from routers.auth.router import router as auth_router
 from routers.third_party_integrations.router import third_party_router
 from database.main import init_models
-from fastapi.openapi.utils import get_openapi
+from scheduler.main import main_scheduler
 
-# Настройка логирования
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 
 handler = logging.StreamHandler()
 handler.setLevel(logging.DEBUG)
@@ -20,12 +21,10 @@ logger.addHandler(handler)
 
 app = FastAPI()
 
-
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(
     third_party_router, prefix="/api/v1/third-party", tags=["third-party"]
 )
-
 
 @app.on_event("startup")
 async def startup_event():
@@ -36,8 +35,8 @@ async def startup_event():
         logger.error(f"Database connection failed: {str(e)}")
         raise
 
+    asyncio.create_task(main_scheduler()) 
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("main:app", host="127.0.0.1", port=80, reload=True)

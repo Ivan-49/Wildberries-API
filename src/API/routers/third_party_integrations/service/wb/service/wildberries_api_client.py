@@ -1,6 +1,4 @@
 import aiohttp
-import asyncio
-from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 import logging
 
@@ -16,7 +14,18 @@ class WildberriesAPIClient:
         self.sp = 30
 
     async def fetch_product_details(self, artikul: str) -> Optional[Dict[str, Any]]:
+        """
+        возвращает словарь вида:{
+                "artikul": str,
+                "name": str,
+                "standart_price": float,
+                "sell_price": float,
+                "total_quantity": int
+                "rating": float(rating),
+            }
+        """
         url = f"{self.base_url}?appType={self.app_type}&curr={self.currency}&dest={self.destination}&sp={self.sp}&nm={artikul}"
+        print(url)
         try:
             logger.info(f"Fetching product details for artikul: {artikul}")
             async with aiohttp.ClientSession() as session:
@@ -30,8 +39,7 @@ class WildberriesAPIClient:
                             name = product.get("name")
                             standart_price = product.get("priceU") / 100
                             sell_price = product.get("salePriceU") / 100
-                            rating = product.get("rating", 0.0)
-                            utc_datetime = datetime.now(timezone.utc)
+                            rating = product.get("reviewRating", 0.0)
                             sizes = product.get("sizes", [])
                             total_quantity = 0
                             for size in sizes:
@@ -46,7 +54,6 @@ class WildberriesAPIClient:
                                 "standart_price": float(standart_price),
                                 "sell_price": float(sell_price),
                                 "total_quantity": int(total_quantity),
-                                "date_time": utc_datetime,
                                 "rating": float(rating),
                             }
                     else:
@@ -61,3 +68,10 @@ class WildberriesAPIClient:
         except Exception as e:
             logger.exception(f"An unexpected error occurred: {e}")
             return None
+
+
+if __name__ == "__main__":
+    import asyncio
+    client = WildberriesAPIClient()
+    response = asyncio.run(client.fetch_product_details("74312538"))
+    print(response)
