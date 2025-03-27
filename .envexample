@@ -4,8 +4,15 @@ POSTGRES_DB=mydb
 
 DATABASE_URL=postgresql+asyncpg://myuser:mypassword@database:5432/mydb
 
-JWT_SECRET_KEY = "secret" your_jwt_secret_key
-ALGORITHM = "HS256" algorithm
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_URL=redis://redis:6379
 
-BOT_TOKEN="your_bot_token"
+
+JWT_SECRET_KEY = "secret"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+
+BOT_TOKEN="bot_token"
+
+INTERVAL_IN_MINUTES=5
