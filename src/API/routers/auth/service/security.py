@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
-from argon2 import PasswordHasher
+from argon2 import PasswordHasher, exceptions
 from dotenv import load_dotenv
 import os
 import logging
@@ -20,12 +20,23 @@ async def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         argon2.verify(hashed_password, plain_password)
         return True
-    except:
+    except exceptions.VerifyMismatchError:
+        logger.debug("Password verification failed: mismatch")
+        return False
+    except exceptions.InvalidHashError as e:
+        logger.error(f"Invalid hash format: {str(e)}")
+        return False
+    except Exception as e:
+        logger.error(f"Unexpected error during password verification: {str(e)}")
         return False
 
 
 async def get_password_hash(password: str) -> str:
-    return argon2.hash(password)
+    try:
+        return argon2.hash(password)
+    except Exception as e:
+        logger.error(f"Error hashing password: {str(e)}")
+        raise
 
 
 async def create_access_token(
