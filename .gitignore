@@ -176,3 +176,6 @@ cython_debug/
 
 # Redis
 *.rdb
+
+# Test
+.test/
