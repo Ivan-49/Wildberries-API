@@ -87,7 +87,7 @@ class ProductRepository:
         )
         
         if existing.scalars().first():
-            logger.warning(f"Запись для marketplace={marketplace}, artikul={artikul} уже существует")
+            logger.debug(f"Запись для marketplace={marketplace}, artikul={artikul} уже существует")
             return
         
         # Если записи нет — добавляем
