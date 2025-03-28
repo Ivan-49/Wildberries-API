@@ -26,10 +26,19 @@ async def login_by_username(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
+    logger.debug(f"Attempting login for username: {form_data.username}")
     user = await user_repository.get_user_by_username(form_data.username, session)
-    if not user or not await verify_password(form_data.password, user.hashed_password):
+    
+    if not user:
+        logger.warning(f"User not found: {form_data.username}")
+        raise HTTPException(status_code=401, detail="Неправильный логин или пароль")
+    
+    logger.debug(f"User found, verifying password for: {form_data.username}")
+    if not await verify_password(form_data.password, user.hashed_password):
+        logger.warning(f"Invalid password for user: {form_data.username}")
         raise HTTPException(status_code=401, detail="Неправильный логин или пароль")
 
+    logger.info(f"Successful login for user: {form_data.username}")
     access_token = await create_access_token(data={"sub": user.user_id})
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -38,13 +47,27 @@ async def login_by_username(
 async def login_by_user_id(
     user_id: int, password: str, session: AsyncSession = Depends(get_session)
 ):
+    logger.debug(f"Attempting login for user_id: {user_id}")
     user = await user_repository.get_user_by_user_id(user_id, session)
-    if not user or not await verify_password(password, user.hashed_password):
+    
+    if not user:
+        logger.warning(f"User not found with ID: {user_id}")
         raise HTTPException(
             status_code=401,
             detail="Incorrect user_id or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    
+    logger.debug(f"User found, verifying password for ID: {user_id}")
+    if not await verify_password(password, user.hashed_password):
+        logger.warning(f"Invalid password for user ID: {user_id}")
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect user_id or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    logger.info(f"Successful login for user ID: {user_id}")
     access_token = await create_access_token(data={"sub": int(user.user_id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
