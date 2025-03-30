@@ -6,7 +6,7 @@ from .user_info_router import router as user_info_router
 
 
 router = APIRouter()
-router.include_router(register_router, prefix="/auth", tags=["auth"])
-router.include_router(oauth2_router, prefix="/auth", tags=["auth"])
-router.include_router(change_password_router, prefix="/auth", tags=["auth"])
-router.include_router(user_info_router, prefix="/auth", tags=["auth"])
+router.include_router(register_router, tags=["auth"])
+router.include_router(oauth2_router, tags=["auth"])
+router.include_router(change_password_router, tags=["auth"])
+router.include_router(user_info_router, tags=["auth"])

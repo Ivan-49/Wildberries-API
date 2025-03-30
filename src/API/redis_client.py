@@ -18,8 +18,9 @@ class RedisClient:
             if type(ttl) != int:
                 ttl = int(ttl)
             await self.redis.set(f"token-{user_id}", jwt_token, ex=ttl)
+            print(f"Токен сохранён: {jwt_token} для пользователя {user_id} с TTL {ttl}")
         except TypeError as e:
-            print(e)
+            print(f"Ошибка сохранения токена: {e}")
 
     async def get_token(self, user_id):
         return await self.redis.get(f"token-{user_id}")

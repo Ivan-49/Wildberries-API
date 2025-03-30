@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 import os
 import logging
 
+from redis_client import RedisClient
+
 load_dotenv()
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -14,6 +16,8 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 argon2 = PasswordHasher(memory_cost=2**16, parallelism=4, hash_len=32, salt_len=16)
 
 logger = logging.getLogger(__name__)
+
+redis_client = RedisClient()
 
 
 async def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -54,10 +58,13 @@ async def create_access_token(
     to_encode.update({"exp": int(expire.timestamp()), "sub": str(data["sub"])})
 
     jwt_token = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=ALGORITHM)
+    await redis_client.save_token(data["sub"], jwt_token, ACCESS_TOKEN_EXPIRE_MINUTES)
+    if await redis_client.check_blacklist(data["sub"]):
+        await redis_client.delete_token_from_blacklist(data["sub"])
     return jwt_token
 
 
-async def verify_token(token: str, credentials_exception) -> int:
+async def decode_token_to_user_id(token: str, credentials_exception) -> int:
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")

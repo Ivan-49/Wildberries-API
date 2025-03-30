@@ -3,12 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer
 from logging import getLogger
 
-from database.main import get_session
+from database import get_session
 from routers.auth.service.repository import UserRepository
 from routers.auth.service.security import (
     verify_password,
     get_password_hash,
-    verify_token,
+    decode_token_to_user_id,
 )
 
 router = APIRouter()
@@ -26,7 +26,7 @@ async def change_password(
     token: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
-    user_id = await verify_token(
+    user_id = await decode_token_to_user_id(
         token, HTTPException(status_code=401, detail="Invalid token")
     )
     user = await user_repository.get_user_by_user_id(user_id, session)

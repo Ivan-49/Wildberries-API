@@ -3,22 +3,28 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from logging import getLogger
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 
-from database.main import get_session
+from database import get_session
 from routers.auth.service.security import (
     create_access_token,
-    verify_token,
+    decode_token_to_user_id,
     verify_password,
 )
-from routers.auth.service.redis import delete_token
 from routers.auth.service.repository import UserRepository
 from schemas.token import TokenSchema
+from redis_client import RedisClient
+
 
 router = APIRouter()
 user_repository = UserRepository()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/auth/auth-by-username")
-
+redis_client = RedisClient()
 logger = getLogger(__name__)
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/auth-by-username",
+    scopes={
+        "logout": "Log out of the application",
+    },
+)
 
 
 @router.post("/auth-by-username", response_model=TokenSchema)
@@ -53,21 +59,12 @@ async def login_by_user_id(
 async def logout_user(
     token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)
 ):
-    user_id = await verify_token(
+    user_id = await decode_token_to_user_id(
         token, HTTPException(status_code=401, detail="Invalid token")
     )
     user = await user_repository.get_user_by_user_id(user_id, session)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-        
+    await redis_client.add_to_blacklist(user.user_id)
 
-    logger.debug(f"""
-    User {user.username} logged out successfully
-    токен до удаления: {await verify_token(token, HTTPException(status_code=401, detail="Invalid token"))}
-    удаление токена: {await delete_token(user_id)}
-    токен после удаления: {await verify_token(token, HTTPException(status_code=401, detail="Invalid token"))}
-    """)
-
-
-    # await delete_token(user_id)
     return {"message": f"User {user.username} logged out successfully"}

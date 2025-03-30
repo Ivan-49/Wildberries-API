@@ -8,13 +8,6 @@ from routers.auth.service.repository import UserRepository
 from schemas.user import UserShema
 
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="/api/v1/auth/auth-by-username",
-    scopes={
-        "logout": "Log out of the application",
-    },
-)
-
 router = APIRouter()
 user_repository = UserRepository()
 

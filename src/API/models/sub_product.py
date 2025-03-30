@@ -3,7 +3,6 @@ from sqlalchemy import Column, Integer, String, DateTime, Float, UniqueConstrain
 from database.base import Base
 
 
-
 class SubscribeModel(Base):
     __tablename__ = "subs_products"
 
@@ -12,5 +11,5 @@ class SubscribeModel(Base):
     artikul = Column(String, nullable=False)
 
     __table_args__ = (
-        UniqueConstraint('marketplace', 'artikul', name='uq_marketplace_artikul'),
+        UniqueConstraint("marketplace", "artikul", name="uq_marketplace_artikul"),
     )

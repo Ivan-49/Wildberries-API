@@ -11,6 +11,7 @@ class WildberriesAPIClient:
     Клиент для работы с API Wildberries.
     Обрабатывает запросы к API с повторными попытками и таймаутами.
     """
+
     def __init__(self):
         self.base_url = "https://card.wb.ru/cards/v1/detail"
         self.app_type = 1
@@ -24,18 +25,20 @@ class WildberriesAPIClient:
     async def fetch_product_details(self, artikul: str) -> Optional[Dict[str, Any]]:
         """
         Получает детали товара с повторными попытками при ошибках.
-        
+
         Args:
             artikul (str): Артикул товара
-            
+
         Returns:
             Optional[Dict[str, Any]]: Данные о товаре или None при ошибке
         """
         url = f"{self.base_url}?appType={self.app_type}&curr={self.currency}&dest={self.destination}&sp={self.sp}&nm={artikul}"
-        
+
         for attempt in range(self.max_retries):
             try:
-                logger.debug(f"Запрос данных для артикула: {artikul} (попытка {attempt + 1}/{self.max_retries})")
+                logger.debug(
+                    f"Запрос данных для артикула: {artikul} (попытка {attempt + 1}/{self.max_retries})"
+                )
                 timeout = aiohttp.ClientTimeout(total=self.timeout)
                 async with aiohttp.ClientSession(timeout=timeout) as session:
                     async with session.get(url) as response:
@@ -55,9 +58,15 @@ class WildberriesAPIClient:
                                         f"Missing price data for artikul {artikul}. "
                                         f"priceU: {price_u}, salePriceU: {sale_price_u}"
                                     )
-                                
-                                standart_price = (price_u / 100) if price_u is not None else 0.0
-                                sell_price = (sale_price_u / 100) if sale_price_u is not None else 0.0
+
+                                standart_price = (
+                                    (price_u / 100) if price_u is not None else 0.0
+                                )
+                                sell_price = (
+                                    (sale_price_u / 100)
+                                    if sale_price_u is not None
+                                    else 0.0
+                                )
 
                                 sizes = product.get("sizes", [])
                                 total_quantity = 0
@@ -86,7 +95,9 @@ class WildberriesAPIClient:
                             return None
 
             except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-                logger.error(f"Error fetching product {artikul} (attempt {attempt + 1}/{self.max_retries}): {str(e)}")
+                logger.error(
+                    f"Error fetching product {artikul} (attempt {attempt + 1}/{self.max_retries}): {str(e)}"
+                )
                 if attempt < self.max_retries - 1:
                     await asyncio.sleep(self.retry_delay)
                     continue
@@ -94,7 +105,7 @@ class WildberriesAPIClient:
             except Exception as e:
                 logger.exception(f"Unexpected error for product {artikul}: {str(e)}")
                 return None
-                
+
         return None
 
 
@@ -102,4 +113,3 @@ if __name__ == "__main__":
     client = WildberriesAPIClient()
     response = asyncio.run(client.fetch_product_details("177241487"))
     print(response)
-    

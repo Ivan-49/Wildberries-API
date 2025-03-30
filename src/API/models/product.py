@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime
 from database.base import Base
 from sqlalchemy.sql import func
 
+
 class ProductModel(Base):
     __tablename__ = "products"
 

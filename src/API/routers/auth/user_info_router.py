@@ -5,9 +5,15 @@ from fastapi.security import OAuth2PasswordBearer
 
 from database.main import get_session
 from routers.auth.service.repository import UserRepository
-from routers.auth.service.security import verify_token
+from routers.auth.service.security import decode_token_to_user_id
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/auth/auth-by-username")
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/auth-by-username",
+    scopes={
+        "logout": "Log out of the application",
+    },
+)
+
 
 router = APIRouter()
 user_repository = UserRepository()
@@ -19,7 +25,7 @@ logger = getLogger(__name__)
 async def get_user_info(
     token: int = Depends(oauth2_scheme), session: AsyncSession = Depends(get_session)
 ):
-    user_id = await verify_token(
+    user_id = await decode_token_to_user_id(
         token, HTTPException(status_code=401, detail="Invalid token")
     )
     user = await user_repository.get_user_by_user_id(user_id, session)
