@@ -7,7 +7,7 @@ from database.base import Base
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
-ECHO_DB = os.getenv("ECHO_DB")
+ECHO_DB = True if os.getenv("ECHO_DB") == "1" else False
 engine = create_async_engine(DATABASE_URL, echo=ECHO_DB)
 
 async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
