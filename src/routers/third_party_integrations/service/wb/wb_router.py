@@ -46,6 +46,7 @@ async def get_product_details(
     logger.info(f"Product {artikul} added to subscribe")
     return result
 
+
 @router.post("/add-product")
 async def add_product_in_db(
     request: ProductRequest,
@@ -54,18 +55,18 @@ async def add_product_in_db(
 ):
     try:
         artikul = request.artikul
-        
+
         # 1. Получаем данные товара
         product = await wb_client.fetch_product_details(artikul)
         if not product:
             return JSONResponse(
                 content={"error": f"Товар {artikul} не найден на Wildberries"},
-                status_code=404
+                status_code=404,
             )
-        
+
         # 2. Добавляем маркетплейс и валидируем
         product["marketplace"] = "wildberries"
-        
+
         try:
             product_model = ProductShema(**product)
             product_history = ProductHistoryShema(**product)
@@ -73,70 +74,62 @@ async def add_product_in_db(
             logger.error(f"Ошибка валидации: {str(e)}")
             return JSONResponse(
                 content={"error": "Некорректные данные от Wildberries API"},
-                status_code=422
+                status_code=422,
             )
 
         # 3. Работа с БД
         try:
             # Проверяем существование товара
             existing_product = await product_repository.get_product_by_artikul(
-                artikul=artikul, 
-                session=session  # Явно передаем сессию
+                artikul=artikul, session=session  # Явно передаем сессию
             )
-            
+
             if not existing_product:
                 await product_repository.add_product(
-                    product=product_model, 
-                    session=session  # Явно передаем сессию
+                    product=product_model, session=session  # Явно передаем сессию
                 )
-            
+
             # Получаем продукт с ID из БД
             product_db = await product_repository.get_product_by_artikul(
-                artikul=artikul, 
-                session=session  # Явно передаем сессию
+                artikul=artikul, session=session  # Явно передаем сессию
             )
-            
+
             if not product_db:
                 raise ValueError("Товар не найден после добавления")
-            
+
             # Добавляем историю (с явным указанием аргументов)
             await product_repository.add_product_history(
                 artikul=artikul,
                 product_history=product_history,  # Модель истории
-                session=session  # Явно передаем сессию
+                session=session,  # Явно передаем сессию
             )
-            
+
             await session.commit()
-            
+
         except IntegrityError as e:
             await session.rollback()
             logger.error(f"Конфликт данных: {str(e)}")
             return JSONResponse(
-                content={"error": "Ошибка дублирования данных"},
-                status_code=409
+                content={"error": "Ошибка дублирования данных"}, status_code=409
             )
         except ValueError as e:
             await session.rollback()
-            return JSONResponse(
-                content={"error": str(e)},
-                status_code=400
-            )
+            return JSONResponse(content={"error": str(e)}, status_code=400)
         except Exception as e:
             await session.rollback()
             logger.error(f"Ошибка БД: {str(e)}")
             return JSONResponse(
-                content={"error": "Ошибка базы данных"},
-                status_code=500
+                content={"error": "Ошибка базы данных"}, status_code=500
             )
-            
+
         return product_model
-        
+
     except Exception as e:
         logger.critical(f"Критическая ошибка: {str(e)}")
         return JSONResponse(
-            content={"error": "Внутренняя ошибка сервера"},
-            status_code=500
+            content={"error": "Внутренняя ошибка сервера"}, status_code=500
         )
+
 
 @router.get("/get-last-dataproduct-by-artikul/{artikul}")
 async def get_last_dataproduct_by_artikul(
@@ -145,13 +138,15 @@ async def get_last_dataproduct_by_artikul(
     session: AsyncSession = Depends(get_session),
 ):
     try:
-        result = await product_repository.get_last_product_history_by_artikul(artikul, session)
+        result = await product_repository.get_last_product_history_by_artikul(
+            artikul, session
+        )
         result = ProductHistoryShema(
             standart_price=result.standart_price,
             sell_price=result.sell_price,
             total_quantity=result.total_quantity,
             rating=result.rating,
-            )
+        )
         return result
     except Exception as e:
         logger.error(f"Error get last product by artikul: {str(e)}")
@@ -177,6 +172,7 @@ async def get_lasted_products_by_artikul(
         logger.error(f"Error get latest products by artikul: {str(e)}")
         raise e
 
+
 @router.get("/get-all-products-paginated")
 async def get_all_products_paginated(
     page: int,
@@ -198,4 +194,4 @@ async def get_all_products_paginated(
         )
     except Exception as e:
         logger.error(f"Error get all products paginated: {str(e)}")
-        raise HTTPException(500, 'Internal server error')
+        raise HTTPException(500, "Internal server error")

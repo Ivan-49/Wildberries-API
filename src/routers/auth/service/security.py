@@ -10,7 +10,7 @@ load_dotenv()
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))*60
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")) * 60
 
 
 argon2 = PasswordHasher(memory_cost=2**16, parallelism=4, hash_len=32, salt_len=16)
@@ -41,14 +41,18 @@ async def get_password_hash(password: str) -> str:
         logger.error(f"Error hashing password: {str(e)}")
         raise
 
-async def verify_hashed_password(hashed_password: str, plain_hashed_password: str) -> str:
+
+async def verify_hashed_password(
+    hashed_password: str, plain_hashed_password: str
+) -> str:
     try:
         if hashed_password == plain_hashed_password:
             return True
     except Exception as e:
         logger.error(f"Error verifying hashed password: {str(e)}")
         raise
-        
+
+
 async def create_access_token(
     data: dict, expires_delta: timedelta | None = None
 ) -> str:

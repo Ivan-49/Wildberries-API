@@ -37,19 +37,24 @@ async def analyze_current_product(
     user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
-    """ 
+    """
     Анализирует текущее состояние товара
     """
     try:
         # Получаем текущий товар
         product = await product_repository.get_product_by_artikul(artikul, session)
         if product:
-            product_data = await product_repository.get_last_product_history_by_artikul(artikul, session)
-            
+            product_data = await product_repository.get_last_product_history_by_artikul(
+                artikul, session
+            )
+
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         if not product_data:
-            raise HTTPException(status_code=404, detail="Product history not found, please wait until we add it.")
+            raise HTTPException(
+                status_code=404,
+                detail="Product history not found, please wait until we add it.",
+            )
         # Преобразуем модель в словарь
         product_dict = {
             "artikul": product.artikul,
@@ -95,27 +100,31 @@ async def analyze_product_history(
         if not product:
             raise HTTPException(status_code=404, detail="Товар не найден")
 
-        product_history = await product_repository.get_lasted_products_by_artikul(artikul, count, session)
+        product_history = await product_repository.get_lasted_products_by_artikul(
+            artikul, count, session
+        )
 
         # Преобразуем модели в словари
         product = {
-                "artikul": product.artikul,
-                "name": product.name,
-                "marketplace": product.marketplace,
-                }
-        product_data_history = [{
+            "artikul": product.artikul,
+            "name": product.name,
+            "marketplace": product.marketplace,
+        }
+        product_data_history = [
+            {
                 "created_at": data.created_at.isoformat(),
                 "total_quantity": data.total_quantity,
                 "sell_price": data.sell_price,
                 "standart_price": data.standart_price,
-                "rating": data.rating
-                }            
-                for data in product_history]
-            
-
+                "rating": data.rating,
+            }
+            for data in product_history
+        ]
 
         # Получаем анализ от ИИ
-        analysis = await giga_chat_client.analyze_products_batch(product = product, product_history = product_data_history)
+        analysis = await giga_chat_client.analyze_products_batch(
+            product=product, product_history=product_data_history
+        )
         return {"analysis": analysis}
 
     except Exception as e:
@@ -140,7 +149,9 @@ async def get_price_dynamics(
         )
         if not products:
             raise HTTPException(status_code=404, detail="Товар не найден")
-        product_data = await product_repository.get_product_by_artikul(artikul=artikul, session=session)
+        product_data = await product_repository.get_product_by_artikul(
+            artikul=artikul, session=session
+        )
         if not product_data:
             raise HTTPException(status_code=404, detail="Товар не найден")
         # Преобразуем модели в словари

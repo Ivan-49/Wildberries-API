@@ -150,9 +150,7 @@ class GigaChatClient:
             raise e
 
     async def analyze_products_batch(
-        self,
-        product: Dict[str, Any],
-        product_history: List[Dict[str, Any]]
+        self, product: Dict[str, Any], product_history: List[Dict[str, Any]]
     ) -> str:
         """
         Анализирует историю изменений одного товара

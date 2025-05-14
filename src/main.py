@@ -14,6 +14,7 @@ from database.main import init_models
 
 from scheduler.main import main_scheduler
 from dotenv import load_dotenv
+
 load_dotenv()
 # Настройка базового логгера
 logger.add(
@@ -76,7 +77,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(third_party_router, prefix="/api/v1/third-party")
-  
 
 
 if __name__ == "__main__":

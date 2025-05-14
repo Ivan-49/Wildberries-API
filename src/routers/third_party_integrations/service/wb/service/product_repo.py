@@ -208,13 +208,13 @@ class ProductRepository:
             #     .order_by(ProductHistoryModel.created_at.desc())
             # )
             result = await session.execute(
-            select(ProductHistoryModel)
-            .join(ProductModel, ProductModel.id == ProductHistoryModel.product_id)
-            .filter(ProductModel.artikul == artikul)
-            .order_by(ProductHistoryModel.created_at.desc())
+                select(ProductHistoryModel)
+                .join(ProductModel, ProductModel.id == ProductHistoryModel.product_id)
+                .filter(ProductModel.artikul == artikul)
+                .order_by(ProductHistoryModel.created_at.desc())
             )
-            
-            if not (result:=result.scalars().first()):
+
+            if not (result := result.scalars().first()):
                 logger.error(
                     f"Product history with artikul {artikul} not found in ProductHistory table"
                 )
@@ -261,12 +261,14 @@ class ProductRepository:
             if search_query:
                 similarity = func.similarity(ProductModel.name, search_query)
                 base_query = (
-                        base_query.add_columns(similarity.label("similarity"))
-                        .where(similarity >= min_similarity)
-                        .order_by(ProductModel.artikul, desc("similarity"))  # <-- Исправлено!
-                        )
+                    base_query.add_columns(similarity.label("similarity"))
+                    .where(similarity >= min_similarity)
+                    .order_by(
+                        ProductModel.artikul, desc("similarity")
+                    )  # <-- Исправлено!
+                )
             else:
-                base_query = base_query.order_by(ProductModel.id)  
+                base_query = base_query.order_by(ProductModel.id)
 
             query = base_query.offset((page - 1) * per_page).limit(per_page)
 
@@ -279,11 +281,13 @@ class ProductRepository:
                     product_data = await self.get_last_product_history_by_artikul(
                         artikul=product.artikul, session=session
                     )
-                    response.append({
-                        "product": product,
-                        "product_data": product_data,
-                        "similarity": similarity
-                    })
+                    response.append(
+                        {
+                            "product": product,
+                            "product_data": product_data,
+                            "similarity": similarity,
+                        }
+                    )
                 return response
             else:
                 return result.scalars().all()
@@ -291,9 +295,10 @@ class ProductRepository:
         except Exception as e:
             logger.error(f"Error get products paginated: {e}")
             raise e
+
     async def get_all_products_from_marketplace(
         self, marketplace: str, session: AsyncSession
-        ):
+    ):
         try:
             result = await session.execute(
                 select(ProductModel).where(ProductModel.marketplace == marketplace)

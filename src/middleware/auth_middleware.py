@@ -24,7 +24,7 @@ async def auth_middleware(request: Request, call_next):
     ]
     if any(request.url.path.startswith(prefix) for prefix in excluded_urls):
         return await call_next(request)
-    
+
     token = request.headers.get("Authorization")
     if not token:
         logger.error("Token not found")

@@ -42,7 +42,7 @@ class ProductHistoryModel(Base):
 
     sell_price = Column(Float, nullable=False)
     standart_price = Column(Float, nullable=False)
-    
+
     total_quantity = Column(Integer, nullable=False)
     rating = Column(Float, nullable=False, default=0.0)
 

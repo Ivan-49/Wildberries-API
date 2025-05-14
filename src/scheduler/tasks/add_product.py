@@ -37,7 +37,9 @@ async def process_product(sub) -> bool:
             if product:
                 product["marketplace"] = sub.marketplace
                 product = ProductHistoryShema(**product)
-                await product_repository.add_product_history(sub.artikul, product, session)
+                await product_repository.add_product_history(
+                    sub.artikul, product, session
+                )
                 await session.commit()
                 return True
             else:

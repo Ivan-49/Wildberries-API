@@ -13,6 +13,7 @@ engine = create_async_engine(DATABASE_URL, echo=ECHO_DB)
 
 async_session = async_sessionmaker(engine, expire_on_commit=False)
 
+
 async def init_models():
     logger.info("START TABLE CREATE")
     async with engine.begin() as conn:

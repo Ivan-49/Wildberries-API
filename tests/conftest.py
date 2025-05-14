@@ -4,12 +4,14 @@ import pytest_asyncio
 from database.main import engine, Base
 from loguru import logger
 
+
 @pytest.fixture(scope="session")
 def event_loop():
     """Event loop с скоупом session для фикстур с скоупом session."""
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
+
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def prepare_database():

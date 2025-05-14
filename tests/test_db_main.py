@@ -2,6 +2,7 @@ import pytest_asyncio
 from database.main import engine, Base
 from loguru import logger
 
+
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def prepare_database():
     logger.info("===> START PREPARE DATABASE")
