@@ -4,13 +4,13 @@
 """
 
 import asyncio
-import logging
+from loguru import logger
 from datetime import datetime, timedelta
 from scheduler.tasks import add_product_in_db
+import os
+from dotenv import load_dotenv
 
-logger = logging.getLogger(__name__)
-
-INTERVAL_IN_MINUTES = 30
+INTERVAL_IN_MINUTES = int(os.getenv("INTERVAL_IN_MINUTES"))
 
 
 async def update_timer(minutes: int):

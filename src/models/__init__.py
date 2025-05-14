@@ -1,3 +1,3 @@
-from models.product import ProductModel
+from models.product import ProductModel, ProductHistoryModel
 from models.user import UserModel
-from models.sub_product import SubscribeModel
+from models.user_subs import UserSubsToProductModel

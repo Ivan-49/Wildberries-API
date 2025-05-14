@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from logging import getLogger
+from loguru import logger
 from fastapi.security import OAuth2PasswordBearer
 
 from database.main import get_session
@@ -18,8 +18,6 @@ oauth2_scheme = OAuth2PasswordBearer(
 router = APIRouter()
 user_repository = UserRepository()
 
-logger = getLogger(__name__)
-
 
 @router.get("/user-info")
 async def get_user_info(
@@ -30,6 +28,7 @@ async def get_user_info(
     )
     user = await user_repository.get_user_by_user_id(user_id, session)
     if not user:
+        logger.error(f"User {user.username} {user.user_id} not found")
         raise HTTPException(status_code=404, detail="User not found")
     return {
         "user_id": user.user_id,

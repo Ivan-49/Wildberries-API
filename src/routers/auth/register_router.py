@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from logging import getLogger
+from loguru import logger
 
 from database.main import get_session
 from routers.auth.service.repository import UserRepository
@@ -11,13 +11,12 @@ from schemas.user import UserShema
 router = APIRouter()
 user_repository = UserRepository()
 
-logger = getLogger(__name__)
 
-
-@router.post("/register")
+@router.post("/register", status_code=201)
 async def register_user(user: UserShema, session: AsyncSession = Depends(get_session)):
     user_in_db = await user_repository.get_user_by_username(user.username, session)
     if user_in_db:
+        logger.error("User already exists")
         raise HTTPException(status_code=400, detail="User already exists")
 
     user_in_db = await user_repository.create_user(user, session=session)

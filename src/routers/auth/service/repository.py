@@ -1,14 +1,12 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from logging import getLogger
 from sqlalchemy.exc import IntegrityError
 from typing import Optional
+from loguru import logger
 
 from models.user import UserModel
 from schemas.user import UserShema
 from routers.auth.service.security import get_password_hash
-
-logger = getLogger(__name__)
 
 
 class UserRepository:
@@ -21,8 +19,10 @@ class UserRepository:
 
             session.add(user)
             await session.commit()
+            logger.info("User created successfully")
             return user
         except IntegrityError as e:
+            logger.error(f"Error create user: {e}")
             raise e
 
     async def get_user_by_user_id(
@@ -46,4 +46,5 @@ class UserRepository:
     ) -> Optional[UserModel]:
         session.add(user)
         await session.commit()
+        logger.info("User updated successfully")
         return user

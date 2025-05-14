@@ -1,0 +1,18 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: pytest -vv -s --durations=30
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - .test.env
+    environment:
+      REDIS_URL: http://redis:6379
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB} 

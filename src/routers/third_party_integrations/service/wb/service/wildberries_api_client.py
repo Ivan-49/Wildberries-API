@@ -1,9 +1,7 @@
 import aiohttp
 from typing import Dict, Any, Optional
-import logging
+from loguru import logger
 import asyncio
-
-logger = logging.getLogger(__name__)
 
 
 class WildberriesAPIClient:

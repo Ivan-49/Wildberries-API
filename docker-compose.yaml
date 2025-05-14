@@ -14,8 +14,8 @@ services:
     env_file:
       - .env
     environment:
-      - REDIS_URL=http://redis:6379
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB} # Исправлено на database
+      REDIS_URL: http://redis:6379
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB} 
 
   database:
     image: postgres:15
