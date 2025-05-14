@@ -12,9 +12,9 @@ oauth2_scheme = OAuth2PasswordBearer(
     },
 )
 
+
+# TODO: сделать роутер для обработки подписок пользоватлей на товары
 @router.get()
 async def get_all_user_subs(
-        user_id = Depends(oauth2_scheme),
-        session = Depends(get_session)
-        )
-    
+    user_id=Depends(oauth2_scheme), session=Depends(get_session)
+): ...

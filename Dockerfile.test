@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["pytest", "-vv", "--durations=30"]
+CMD ["pytest", "-vv", "--tb=short", "--durations=30"]

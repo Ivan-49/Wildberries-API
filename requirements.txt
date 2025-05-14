@@ -49,6 +49,7 @@ pydantic_core==2.27.2
 PySocks==1.7.1
 pytest==8.3.5
 pytest-asyncio==0.26.0
+pytest-sugar==1.0.0
 python-dotenv==1.0.1
 python-jose==3.4.0
 python-multipart==0.0.20
@@ -64,6 +65,7 @@ sortedcontainers==2.4.0
 soupsieve==2.6
 SQLAlchemy==2.0.38
 starlette==0.45.3
+termcolor==3.1.0
 trio==0.29.0
 trio-websocket==0.12.2
 typing_extensions==4.12.2

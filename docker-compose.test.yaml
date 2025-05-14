@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.test
-    command: pytest -vv --durations=30
+    command: pytest -vv --tb=short --durations=30
     ports:
       - "8000:8000"
     volumes:

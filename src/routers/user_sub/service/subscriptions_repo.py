@@ -6,4 +6,5 @@ from models import ProductModel, SubscribeModel
 from loguru import logger
 
 
+# TODO: сделать репозиторий для обработки подписок пользователей на товары
 class SubscriptionsRepository: ...
