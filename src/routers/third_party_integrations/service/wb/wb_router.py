@@ -32,7 +32,7 @@ product_repository = ProductRepository()
 @router.get("/get-product-details/{artikul}")
 async def get_product_details(
     artikul: str,
-    # user_id: str = Depends(oauth2_scheme),
+    user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
 

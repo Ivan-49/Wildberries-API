@@ -15,7 +15,6 @@ async def auth_middleware(request: Request, call_next):
     user_repo = UserRepository()
     excluded_urls = [
         "/",
-        "/api/v1/third-party/wildberries/get-product-details",
         "/api/v1/auth/auth-by-username",
         "/api/v1/auth/auth-by-user-id",
         "/api/v1/auth/register",
