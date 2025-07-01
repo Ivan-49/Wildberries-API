@@ -211,4 +211,3 @@ async def get_all_products_paginated(
         logger.error(f"Error get all products paginated: {str(e)}")
         raise HTTPException(500, "Internal server error")
 
-# TODO: 
