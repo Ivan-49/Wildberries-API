@@ -35,7 +35,9 @@ async def get_product_details(
     user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
-
+    """
+    получить данные о товаре без добовления их в базу данных 
+    """
     product = await wb_client.fetch_product_details(artikul)
     result = product.copy()
     product["marketplace"] = "wildberries"
@@ -53,6 +55,10 @@ async def add_product_in_db(
     user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
+    """
+    получить данные о товаре с добовлением товара в базу данных
+    """
+
     try:
         artikul = request.artikul
 
@@ -136,7 +142,10 @@ async def get_last_dataproduct_by_artikul(
     artikul: str,
     user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
-):
+    ):
+    """
+     получить последние данные в базе данных о товаре
+    """
     try:
         result = await product_repository.get_last_product_history_by_artikul(
             artikul, session
@@ -159,6 +168,9 @@ async def get_lasted_products_by_artikul(
     user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
+    """
+    получить несколько пакетов данных о товаре за последнее время (до 100 пакетов включительно)
+    """
     try:
         if count > 100:
             raise HTTPException(
@@ -183,6 +195,9 @@ async def get_all_products_paginated(
     user_id: str = Depends(oauth2_scheme),
     session: AsyncSession = Depends(get_session),
 ):
+    """
+    поиск товара в базе данных приложения с пагинацией и настройкой схожести запроса с предпологаемым ответом
+    """
     try:
         return await product_repository.get_products_paginated(
             session=session,
@@ -195,3 +210,5 @@ async def get_all_products_paginated(
     except Exception as e:
         logger.error(f"Error get all products paginated: {str(e)}")
         raise HTTPException(500, "Internal server error")
+
+# TODO: 
