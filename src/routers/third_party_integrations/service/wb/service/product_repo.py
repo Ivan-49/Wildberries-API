@@ -218,9 +218,8 @@ class ProductRepository:
                 logger.error(
                     f"Product history with artikul {artikul} not found in ProductHistory table"
                 )
-                return {
-                    "message": f"Product history with artikul {artikul} not found in ProductHistory table"
-                }
+                return
+                
             return result
         except Exception as e:
             logger.error(f"Error get last product history by artikul: {e}")
