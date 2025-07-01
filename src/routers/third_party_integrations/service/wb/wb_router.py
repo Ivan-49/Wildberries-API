@@ -150,13 +150,16 @@ async def get_last_dataproduct_by_artikul(
         result = await product_repository.get_last_product_history_by_artikul(
             artikul, session
         )
-        result = ProductHistoryShema(
-            standart_price=result.standart_price,
-            sell_price=result.sell_price,
-            total_quantity=result.total_quantity,
-            rating=result.rating,
-        )
-        return result
+        if result:
+            result = ProductHistoryShema(
+                standart_price=result.standart_price,
+                sell_price=result.sell_price,
+                total_quantity=result.total_quantity,
+                rating=result.rating,
+            )
+            return result
+        else:
+            return JSONResponse({'message':'not_found'},status_code = 404)
     except Exception as e:
         logger.error(f"Error get last product by artikul: {str(e)}")
 
@@ -177,9 +180,13 @@ async def get_lasted_products_by_artikul(
                 status_code=400,
                 detail="Превышено максимальное количество записей для анализа",
             )
-        return await product_repository.get_lasted_products_by_artikul(
+        result = await product_repository.get_lasted_products_by_artikul(
             artikul, count, session
         )
+        result = {'count' : len(result),
+                'result': result}
+        return result 
+
     except Exception as e:
         logger.error(f"Error get latest products by artikul: {str(e)}")
         raise e
