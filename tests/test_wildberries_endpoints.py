@@ -32,4 +32,16 @@ async def test_add_product(async_client,auth_user):
     ), f"Unexpected status code: {response.status_code}, body: {response.text}"
     logger.info("Finished test_add_product")
 
-
+@pytest.mark.asyncio
+async def test_get_last_dataproduct_by_artikul(async_client,auth_user):
+    logger.info('Starting test_get_last_dataproduct_by_artikul')
+    response = await async_client.get(
+        "/api/v1/third-party/wildberries/get-last-dataproduct-by-artikul/235745003",
+        headers = auth_user['headers'],
+    )
+    assert (
+        response.status_code == 200
+        ), f"Unexpected status code: {response.status_code}, body: {response.text}"
+    logger.info("Finished test_get_last_dataproduct_by_artikul")
+    
+        
