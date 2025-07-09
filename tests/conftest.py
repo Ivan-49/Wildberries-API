@@ -1,11 +1,31 @@
-import asyncio
 import pytest
 import pytest_asyncio
+from unittest.mock import AsyncMock
+import asyncio
 import uuid
 from httpx import AsyncClient
 from httpx._transports.asgi import ASGITransport
 from database.main import engine, Base
 from main import app
+from routers.third_party_integrations.service.wb.wb_router import wb_client
+import itertools
+
+_artikul_counter = itertools.count(1)
+
+@pytest.fixture(autouse=True)
+def mock_wildberries_api(mocker):
+    def side_effect(artikul):
+        return {
+            "artikul": artikul,  # возвращаем тот же артикула, который запрошен
+            "name": f"Mocked Product Name {next(_artikul_counter)}",
+            "standart_price": 100.0,
+            "sell_price": 80.0,
+            "total_quantity": 50,
+            "rating": 4.5,
+        }
+    mock = mocker.patch.object(wb_client, "fetch_product_details", new_callable=AsyncMock)
+    mock.side_effect = side_effect
+    yield mock
 
 
 @pytest.fixture(scope="session")
@@ -70,3 +90,4 @@ async def auth_user(async_client):
         "username": username,
         "password": password,
     }
+

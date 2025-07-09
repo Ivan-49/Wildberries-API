@@ -1,9 +1,9 @@
 import pytest
 from loguru import logger
-
+import sys
 
 @pytest.mark.asyncio
-async def test_get_product_details(async_client, auth_user):
+async def test_get_product_details(async_client, auth_user, mock_wildberries_api):
     logger.info("Starting test_get_product_details")
     response = await async_client.get(
         "/api/v1/third-party/wildberries/get-product-details/235745003",
@@ -15,7 +15,10 @@ async def test_get_product_details(async_client, auth_user):
         response.status_code == 200
     ), f"Unexpected status code: {response.status_code}, body: {response.text}"
     logger.info("Finished test_get_product_details")
+    logger.error(response.json())
 
+    mock_wildberries_api.assert_awaited_once()
+    
 @pytest.mark.asyncio
 async def test_add_product(async_client,auth_user):
     logger.info("Starting test_add_product")
